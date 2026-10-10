@@ -1,0 +1,18 @@
+name = "rankpulse-starter"
+main = "src/index.js"
+compatibility_date = "2026-08-28"
+account_id = "1e65bed301120c0c392ae4989b3ed6b0"
+
+[[d1_databases]]
+binding = "STARTER_DB"
+database_name = "starter-questions"
+database_id = "8b9ac081-7df0-49ae-871d-d6b74f3c7d2f"
+
+[env.production]
+name = "rankpulse-starter"
+account_id = "1e65bed301120c0c392ae4989b3ed6b0"
+
+[[env.production.d1_databases]]
+binding = "STARTER_DB"
+database_name = "starter-questions"
+database_id = "8b9ac081-7df0-49ae-871d-d6b74f3c7d2f"

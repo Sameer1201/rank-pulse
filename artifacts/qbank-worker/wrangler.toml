@@ -1,0 +1,21 @@
+name = "rankpulse-qbank"
+main = "src/index.js"
+compatibility_date = "2026-08-28"
+account_id = "7a94feb19c9db9b7efb44b20cb249203"
+
+[[d1_databases]]
+binding = "QB_DB"
+database_name = "qbank"
+database_id = "30921235-2543-4fb5-a970-fb4164590de6"
+
+[env.production]
+name = "rankpulse-qbank"
+account_id = "7a94feb19c9db9b7efb44b20cb249203"
+
+[env.production.ai]
+binding = "AI"
+
+[[env.production.d1_databases]]
+binding = "QB_DB"
+database_name = "qbank"
+database_id = "30921235-2543-4fb5-a970-fb4164590de6"

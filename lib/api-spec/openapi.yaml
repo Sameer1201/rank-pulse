@@ -1,0 +1,1110 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: EduConnect EdTech Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User management
+  - name: classes
+    description: Online class management
+  - name: whiteboard
+    description: Whiteboard sessions
+  - name: dashboard
+    description: Dashboard summaries
+  - name: feedback
+    description: Class feedback
+  - name: support
+    description: Support tickets
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/register:
+    post:
+      operationId: registerStudent
+      tags: [auth]
+      summary: Register a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterStudentBody"
+      responses:
+        "201":
+          description: Registration submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/exams:
+    get:
+      operationId: listRegistrationExams
+      tags: [auth]
+      summary: List available exam options for student registration
+      responses:
+        "200":
+          description: Available exams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RegistrationExamOption"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current logged in user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (super admin / admin / planner)
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [student, admin, super_admin, planner]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, active]
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+    post:
+      operationId: createAdmin
+      tags: [users]
+      summary: Create admin user (super admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdminBody"
+      responses:
+        "201":
+          description: Admin created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user (super admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /users/{id}/approve:
+    patch:
+      operationId: approveStudent
+      tags: [users]
+      summary: Approve or reject a student registration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveStudentBody"
+      responses:
+        "200":
+          description: Student status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /classes:
+    get:
+      operationId: listClasses
+      tags: [classes]
+      summary: List classes
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [scheduled, live, completed, cancelled]
+      responses:
+        "200":
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Class"
+
+    post:
+      operationId: createClass
+      tags: [classes]
+      summary: Create a class (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClassBody"
+      responses:
+        "201":
+          description: Class created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+  /classes/{id}:
+    get:
+      operationId: getClass
+      tags: [classes]
+      summary: Get class details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Class details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateClass
+      tags: [classes]
+      summary: Update class (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClassBody"
+      responses:
+        "200":
+          description: Class updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+    delete:
+      operationId: deleteClass
+      tags: [classes]
+      summary: Delete class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /classes/{id}/start:
+    patch:
+      operationId: startClass
+      tags: [classes]
+      summary: Start a live class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Class started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+  /classes/{id}/end:
+    patch:
+      operationId: endClass
+      tags: [classes]
+      summary: End a live class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Class ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+  /classes/{id}/enroll:
+    post:
+      operationId: enrollInClass
+      tags: [classes]
+      summary: Enroll in a class (student)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Enrolled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /classes/{id}/enrollments:
+    get:
+      operationId: getClassEnrollments
+      tags: [classes]
+      summary: Get students enrolled in a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Enrolled students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /whiteboard/{classId}:
+    get:
+      operationId: getWhiteboardData
+      tags: [whiteboard]
+      summary: Get whiteboard state for a class
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Whiteboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhiteboardData"
+
+    post:
+      operationId: saveWhiteboardData
+      tags: [whiteboard]
+      summary: Save whiteboard state
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveWhiteboardBody"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhiteboardData"
+
+  /dashboard/super-admin:
+    get:
+      operationId: getSuperAdminDashboard
+      tags: [dashboard]
+      summary: Super admin dashboard stats
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuperAdminDashboard"
+
+  /dashboard/admin:
+    get:
+      operationId: getAdminDashboard
+      tags: [dashboard]
+      summary: Admin/teacher dashboard stats
+      responses:
+        "200":
+          description: Admin dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDashboard"
+
+  /dashboard/student:
+    get:
+      operationId: getStudentDashboard
+      tags: [dashboard]
+      summary: Student dashboard stats
+      responses:
+        "200":
+          description: Student dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentDashboard"
+
+  /feedback:
+    post:
+      operationId: submitFeedback
+      tags: [feedback]
+      summary: Submit feedback for a class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitFeedbackBody"
+      responses:
+        "200":
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /feedback/class/{classId}:
+    get:
+      operationId: getClassFeedback
+      tags: [feedback]
+      summary: Get feedback for a class
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Class feedback list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedbackItem"
+
+  /support:
+    get:
+      operationId: listSupportTickets
+      tags: [support]
+      summary: List support tickets
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved]
+      responses:
+        "200":
+          description: Support tickets list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupportTicket"
+    post:
+      operationId: createSupportTicket
+      tags: [support]
+      summary: Create a support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupportTicketBody"
+      responses:
+        "200":
+          description: Ticket created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicket"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /support/{id}/respond:
+    patch:
+      operationId: respondToTicket
+      tags: [support]
+      summary: Admin responds to a support ticket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondToTicketBody"
+      responses:
+        "200":
+          description: Response saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicket"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    LoginBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+      required:
+        - user
+        - message
+
+    RegisterStudentBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        exam:
+          type: string
+      required:
+        - username
+        - password
+        - fullName
+        - email
+        - exam
+
+    RegistrationExamOption:
+      type: object
+      properties:
+        exam:
+          type: string
+        batchCount:
+          type: number
+      required:
+        - exam
+        - batchCount
+
+    CreateAdminBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        subject:
+          type: ["string", "null"]
+        role:
+          type: ["string", "null"]
+          enum: [admin, planner]
+      required:
+        - username
+        - password
+        - fullName
+        - email
+
+    UpdateUserBody:
+      type: object
+      properties:
+        fullName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+
+    ApproveStudentBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+      required:
+        - status
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [student, admin, super_admin, planner]
+        status:
+          type: string
+          enum: [pending, approved, rejected, active]
+        priorityAccess:
+          type: boolean
+          description: Whether this student bypasses temporary student access pauses
+        phone:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - fullName
+        - email
+        - role
+        - status
+        - createdAt
+
+    Class:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        subject:
+          type: string
+        adminId:
+          type: integer
+        adminName:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [scheduled, live, completed, cancelled]
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        startedAt:
+          type: ["string", "null"]
+          format: date-time
+        endedAt:
+          type: ["string", "null"]
+          format: date-time
+        maxStudents:
+          type: ["integer", "null"]
+        enrolledCount:
+          type: integer
+        meetingLink:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - subject
+        - adminId
+        - status
+        - enrolledCount
+        - createdAt
+
+    CreateClassBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        subject:
+          type: string
+        scheduledAt:
+          type: ["string", "null"]
+        maxStudents:
+          type: ["integer", "null"]
+        meetingLink:
+          type: ["string", "null"]
+      required:
+        - title
+        - subject
+
+    UpdateClassBody:
+      type: object
+      properties:
+        title:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+        scheduledAt:
+          type: ["string", "null"]
+        maxStudents:
+          type: ["integer", "null"]
+        meetingLink:
+          type: ["string", "null"]
+        status:
+          type: ["string", "null"]
+          enum: [scheduled, live, completed, cancelled]
+
+    WhiteboardData:
+      type: object
+      properties:
+        id:
+          type: integer
+        classId:
+          type: integer
+        data:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - classId
+        - data
+        - updatedAt
+
+    SaveWhiteboardBody:
+      type: object
+      properties:
+        data:
+          type: string
+      required:
+        - data
+
+    SuperAdminDashboard:
+      type: object
+      properties:
+        totalAdmins:
+          type: integer
+        totalStudents:
+          type: integer
+        pendingStudents:
+          type: integer
+        totalClasses:
+          type: integer
+        liveClasses:
+          type: integer
+        recentAdmins:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        recentStudents:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - totalAdmins
+        - totalStudents
+        - pendingStudents
+        - totalClasses
+        - liveClasses
+        - recentAdmins
+        - recentStudents
+
+    AdminDashboard:
+      type: object
+      properties:
+        totalClasses:
+          type: integer
+        liveClasses:
+          type: integer
+        totalStudents:
+          type: integer
+        pendingStudents:
+          type: integer
+        upcomingClasses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Class"
+        recentStudents:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - totalClasses
+        - liveClasses
+        - totalStudents
+        - pendingStudents
+        - upcomingClasses
+        - recentStudents
+
+    StudentDashboard:
+      type: object
+      properties:
+        enrolledClasses:
+          type: integer
+        liveClasses:
+          type: integer
+        upcomingClasses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Class"
+        availableClasses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Class"
+      required:
+        - enrolledClasses
+        - liveClasses
+        - upcomingClasses
+        - availableClasses
+
+    FeedbackItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        classId:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - classId
+        - studentId
+        - studentName
+        - rating
+        - createdAt
+
+    SubmitFeedbackBody:
+      type: object
+      properties:
+        classId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: ["string", "null"]
+      required:
+        - classId
+        - rating
+
+    SupportTicket:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved]
+        adminResponse:
+          type: ["string", "null"]
+        respondedBy:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - studentId
+        - studentName
+        - subject
+        - message
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateSupportTicketBody:
+      type: object
+      properties:
+        subject:
+          type: string
+        message:
+          type: string
+      required:
+        - subject
+        - message
+
+    RespondToTicketBody:
+      type: object
+      properties:
+        adminResponse:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved]
+      required:
+        - adminResponse
+        - status
+
+    ListSupportTicketsParams:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, in_progress, resolved]

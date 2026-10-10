@@ -1,0 +1,6 @@
+{
+  "name": "@workspace/psu-worker",
+  "private": true,
+  "type": "module",
+  "scripts": { "deploy": "wrangler deploy --env production", "migrate": "wrangler d1 migrations apply psu --remote" }
+}

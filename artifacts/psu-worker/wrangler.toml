@@ -1,0 +1,18 @@
+name = "rankpulse-psu"
+main = "src/index.js"
+compatibility_date = "2026-09-22"
+account_id = "c8cdcd5acfd39d60f7cfe7989d6a6608"
+
+# The database belongs to the intended PSU Cloudflare account.
+[[d1_databases]]
+binding = "PSU_DB"
+database_name = "psu"
+database_id = "47eeafc4-8bfa-47e5-b200-332a04882828"
+
+[env.production]
+name = "rankpulse-psu"
+
+[[env.production.d1_databases]]
+binding = "PSU_DB"
+database_name = "psu"
+database_id = "47eeafc4-8bfa-47e5-b200-332a04882828"

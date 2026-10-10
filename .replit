@@ -1,0 +1,76 @@
+modules = ["nodejs-22"]
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash -c './run-api.sh & exec ./run-edtech.sh'"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "RankPulse API"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./run-api.sh"
+waitForPort = 8080
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./run-edtech.sh"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 22495
+externalPort = 3001
+
+[[ports]]
+localPort = 22496
+externalPort = 3002
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["pnpm", "start"]
+build = ["pnpm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+FIREBASE_GOOGLE_NEW_STUDENT_STATUS = "pending"
+NODE_ENV = "development"
+CLOUDFLARE_ACCOUNT_ID = "044791c24ac1de2cb822a0df91b2ab5f"
+CLOUDFLARE_D1_DATABASE_ID = "832a1c3f-79d9-4b07-85de-06ca4b85ba56"

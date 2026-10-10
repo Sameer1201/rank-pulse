@@ -1,0 +1,55 @@
+name = "rankpulse-api"
+main = "dist/cloudflare-worker.mjs"
+compatibility_date = "2026-08-28"
+compatibility_flags = ["nodejs_compat"]
+
+[ai]
+binding = "AI"
+
+[vars]
+DATABASE_PROVIDER = "d1"
+DATABASE_BINDING = "DB"
+DATABASE_NAME = "rank"
+PUBLIC_APP_URL = "https://rank-cu1.pages.dev"
+PSU_PROXY_URL = "https://rankpulse-psu.workspace-psu-worker.workers.dev"
+AI_HINT_PYQ_URL = "https://rankpulse-pyq-ai.workspace-psu-worker.workers.dev"
+JAM_PYQ_PROXY_URL = "https://rankpulse-jam-content.workspace-psu-worker.workers.dev"
+JAM_QB_PROXY_URL = "https://rankpulse-jam-content.workspace-psu-worker.workers.dev"
+JAM_QB_CLASS_IDS = "2"
+STARTER_PROXY_URL = "https://rankpulse-starter.rankpulse-starter-1e65.workers.dev"
+STARTER_ENABLED = "true"
+STARTER_MIGRATION_PAUSED = "false"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rank"
+database_id = "832a1c3f-79d9-4b07-85de-06ca4b85ba56"
+
+[build]
+command = "BUILD_TARGET=cloudflare pnpm run build:cloudflare"
+
+[env.production]
+name = "rankpulse-api"
+
+[env.production.vars]
+OFFLINE_GATE_PYQ_ENABLED = "true"
+DATABASE_PROVIDER = "d1"
+DATABASE_BINDING = "DB"
+DATABASE_NAME = "rank"
+PUBLIC_APP_URL = "https://rank-cu1.pages.dev"
+PSU_PROXY_URL = "https://rankpulse-psu.workspace-psu-worker.workers.dev"
+AI_HINT_PYQ_URL = "https://rankpulse-pyq-ai.workspace-psu-worker.workers.dev"
+JAM_PYQ_PROXY_URL = "https://rankpulse-jam-content.workspace-psu-worker.workers.dev"
+JAM_QB_PROXY_URL = "https://rankpulse-jam-content.workspace-psu-worker.workers.dev"
+JAM_QB_CLASS_IDS = "2"
+STARTER_PROXY_URL = "https://rankpulse-starter.rankpulse-starter-1e65.workers.dev"
+STARTER_ENABLED = "true"
+STARTER_MIGRATION_PAUSED = "false"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "rank"
+database_id = "832a1c3f-79d9-4b07-85de-06ca4b85ba56"
+
+[env.production.ai]
+binding = "AI"

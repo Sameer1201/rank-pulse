@@ -1,0 +1,21 @@
+name = "rankpulse-pyq"
+main = "src/index.js"
+compatibility_date = "2026-08-28"
+account_id = "b9522908b9bc3ab7fc3d80bda2121c95"
+
+# Configure this Worker while logged into the separate Cloudflare account.
+# Do not commit account IDs or tokens to this repository.
+
+[[d1_databases]]
+binding = "PYQ_DB"
+database_name = "pyq"
+database_id = "ed0ede4f-8f4b-478f-88b6-e0fbe7a82a05"
+
+[env.production]
+name = "rankpulse-pyq"
+account_id = "b9522908b9bc3ab7fc3d80bda2121c95"
+
+[[env.production.d1_databases]]
+binding = "PYQ_DB"
+database_name = "pyq"
+database_id = "ed0ede4f-8f4b-478f-88b6-e0fbe7a82a05"

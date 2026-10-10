@@ -1,0 +1,14 @@
+{
+  "name": "@workspace/pyq-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply pyq --local",
+    "migrate:remote": "wrangler d1 migrations apply pyq --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.36.0"
+  }
+}

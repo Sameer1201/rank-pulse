@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {build} from 'esbuild';
+import {fixture} from './helpers/worker-fixture.mjs';
+const bundle=await build({entryPoints:[new URL('../src/lib/studentReadCache.ts',import.meta.url).pathname],bundle:true,write:false,format:'esm'});
+const {cachedDailyActivity,coalesceStudentRead,studentReadIdentity}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+const now=Date.parse('2026-10-05T12:00:00Z');
+const value=(count=7,date='2026-10-05')=>({date,timezone:'Asia/Kolkata',attemptedToday:count,bySource:{questionBank:count,pyq:0,jamPyq:0,tests:0,psuTests:0}});
+test('daily cache reuses one student row, expires after 60 seconds and never crosses IST midnight',async t=>{
+  const f=fixture();t.after(()=>f.sql.close());let reads=0;
+  const load=async()=>{reads++;return value(reads);};
+  assert.equal((await cachedDailyActivity(f.env.DB,2,load,now)).attemptedToday,1);
+  assert.equal((await cachedDailyActivity(f.env.DB,2,load,now+59999)).attemptedToday,1);
+  assert.equal(reads,1,'cache hit skips all shard reads');
+  assert.equal((await cachedDailyActivity(f.env.DB,2,load,now+60000)).attemptedToday,2);
+  assert.equal((await cachedDailyActivity(f.env.DB,3,load,now+60000)).attemptedToday,3);
+  const midnight=Date.parse('2026-10-05T18:30:00Z');
+  await cachedDailyActivity(f.env.DB,2,load,midnight-1000);
+  assert.equal((await cachedDailyActivity(f.env.DB,2,async()=>value(0,'2026-10-06'),midnight)).attemptedToday,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM student_daily_activity_cache').get().n,2);
+});
+test('new per-request wrappers share only in-flight reads through a stable binding/topology identity',async t=>{
+  const f=fixture();t.after(()=>f.sql.close());
+  const identity=studentReadIdentity(f.env.DB,'starter:on:local');
+  assert.equal(studentReadIdentity(f.env.DB,'starter:on:local'),identity);
+  assert.notEqual(studentReadIdentity(f.env.DB,'starter:off'),identity);
+  assert.notEqual(studentReadIdentity({},'starter:on:local'),identity);
+  let reads=0;
+  const load=async()=>{reads++;await new Promise(r=>setTimeout(r,10));return value();};
+  const wrapper=()=>({prepare:sql=>f.env.DB.prepare(sql)});
+  const rows=await Promise.all(Array.from({length:8},()=>cachedDailyActivity(wrapper(),2,load,now,identity)));
+  assert.equal(reads,1);assert.ok(rows.every(row=>row.attemptedToday===7));
+  const totals=await Promise.all([coalesceStudentRead(identity,'overview:2',async()=>1),coalesceStudentRead(identity,'overview:3',async()=>2)]);
+  assert.deepEqual(totals,[1,2]);
+});
+test('concurrent readers coalesce but failures are never cached and other bindings stay isolated',async t=>{
+  const f=fixture();t.after(()=>f.sql.close());let reads=0;
+  const load=async()=>{reads++;await new Promise(r=>setTimeout(r,10));return value();};
+  const result=await Promise.all(Array.from({length:8},()=>cachedDailyActivity(f.env.DB,2,load,now)));
+  assert.equal(reads,1);assert.ok(result.every(row=>row.attemptedToday===7));
+  await assert.rejects(cachedDailyActivity(f.env.DB,9,async()=>{throw new Error('offline');},now),/offline/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM student_daily_activity_cache WHERE student_id=9').get().n,0);
+  assert.equal((await cachedDailyActivity(f.env.DB,9,load,now)).attemptedToday,7);
+  const [a,b]=await Promise.all([coalesceStudentRead({},'overview:2',async()=>1),coalesceStudentRead({},'overview:2',async()=>2)]);
+  assert.deepEqual([a,b],[1,2]);
+});

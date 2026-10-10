@@ -1,0 +1,18 @@
+name = "rankpulse-jam-content"
+main = "src/index.js"
+compatibility_date = "2026-08-28"
+account_id = "c8cdcd5acfd39d60f7cfe7989d6a6608"
+
+[[d1_databases]]
+binding = "JAM_DB"
+database_name = "jam-chemistry"
+database_id = "72f8aefa-beea-4d7e-8c79-fb982d8efa8e"
+
+[env.production]
+name = "rankpulse-jam-content"
+account_id = "c8cdcd5acfd39d60f7cfe7989d6a6608"
+
+[[env.production.d1_databases]]
+binding = "JAM_DB"
+database_name = "jam-chemistry"
+database_id = "72f8aefa-beea-4d7e-8c79-fb982d8efa8e"

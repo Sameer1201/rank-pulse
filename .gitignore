@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+artifacts/*/dist/
+artifacts/edtech/pages-upload*/
+.wrangler/
+*.log
+.DS_Store
+*.zip
+artifacts/*/backups/
+verification/

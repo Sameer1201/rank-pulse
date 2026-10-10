@@ -1,0 +1,12 @@
+{
+  "name": "@workspace/api-spec",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node -e \"console.log('No build output required for @workspace/api-spec')\"",
+    "codegen": "orval --config ./orval.config.ts"
+  },
+  "devDependencies": {
+    "orval": "^8.22.0"
+  }
+}

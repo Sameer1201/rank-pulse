@@ -1,0 +1,2 @@
+- [Workflow startup permissions](workflow-startup.md) — Replit workflows must invoke executable run scripts or explicitly run them through `bash`.
+- [Workflow port ownership](workflow-port-ownership.md) — Avoid launching parent and artifact-managed service workflows together; duplicate children can race for the same ports.

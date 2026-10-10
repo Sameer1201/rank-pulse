@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>RankPulse</title>
+    <meta name="description" content="RankPulse helps competitive exam aspirants practice smarter with timed tests, deep performance analysis, a revision bucket, and chapter-wise question banks — all in one clean workspace." />
+    <link rel="icon" type="image/png" href="/rankpulse-logo.png" />
+    <link rel="apple-touch-icon" href="/rankpulse-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root">
+      <div id="boot-loading" role="status" style="min-height:70vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font:16px system-ui,sans-serif;color:#64748b;padding:24px;text-align:center">
+        <strong style="color:#f97316;font-size:24px">RankPulse</strong>
+        <span>Loading your page…</span>
+        <button id="boot-reload" hidden style="border:0;border-radius:8px;background:#f97316;color:white;padding:12px 20px;cursor:pointer">Reload page</button>
+      </div>
+    </div>
+    <script>
+      // Visible even when the main JavaScript bundle fails to download.
+      document.getElementById("boot-reload").onclick = function () { window.location.reload(); };
+      setTimeout(function () {
+        var button = document.getElementById("boot-reload");
+        if (button) {
+          button.hidden = false;
+          document.querySelector("#boot-loading span").textContent = "Taking longer than usual. Check your connection and reload.";
+        }
+      }, 15000);
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

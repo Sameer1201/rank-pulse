@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "EduConnect EdTech Platform"
+version = "1.0.0"
+id = "artifacts/edtech"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22495
+
+[services.development]
+run = "pnpm --filter @workspace/edtech run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/edtech", "run", "build" ]
+publicDir = "artifacts/edtech/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22495"
+BASE_PATH = "/"
